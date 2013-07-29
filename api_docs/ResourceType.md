@@ -1,7 +1,7 @@
 Resource Type
 =============
 
-See the [source manifest](#Source) used to generate all example responses.
+See the end of this page for the source manifest used to generate all example responses.
 
 Find
 ----
