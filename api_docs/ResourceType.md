@@ -6,9 +6,7 @@ See the end of this page for the source manifest used to generate all example re
 Find
 ----
 
-```http
-GET /:environment/resource_type/:name
-```
+    GET /:environment/resource_type/:name
 
 ### Parameters
 
@@ -18,62 +16,42 @@ None
 
 #### Resource type found
 
-```http
-GET /env/resource_type/athing
-```
+    GET /env/resource_type/athing
 
-```http
-HTTP 200 OK
-Content-Type: text/pson
-```
+    HTTP 200 OK
+    Content-Type: text/pson
 
-```json
-{
-  "line": 7,
-  "file": "/etc/puppet/manifests/site.pp",
-  "name":"athing",
-  "kind":"class"
-}
-```
+    {
+      "line": 7,
+      "file": "/etc/puppet/manifests/site.pp",
+      "name":"athing",
+      "kind":"class"
+    }
 
 #### Resource type not found
 
-```http
-GET /env/resource_type/resource_type_does_not_exist
-```
+    GET /env/resource_type/resource_type_does_not_exist
 
-```http
-HTTP 404 Not Found: Could not find resource_type resource_type_does_not_exist
-Content-Type: text/plain
-```
+    HTTP 404 Not Found: Could not find resource_type resource_type_does_not_exist
+    Content-Type: text/plain
 
-```
-Not Found: Could not find resource_type resource_type_does_not_exist
-```
+    Not Found: Could not find resource_type resource_type_does_not_exist
 
 #### No resource type name given
 
-```http
-GET /env/resource_type/
-```
+    GET /env/resource_type/
 
-```http
-HTTP/1.1 400 No request key specified in /env/resource_type/
-Content-Type: text/plain
-```
+    HTTP/1.1 400 No request key specified in /env/resource_type/
+    Content-Type: text/plain
 
-```
-No request key specified in /env/resource_type/
-```
+    No request key specified in /env/resource_type/
 
 Search
 ------
 
 List all resource types matching a regular expression:
 
-```http
-GET /:environment/resource_types/:search_string
-```
+    GET /:environment/resource_types/:search_string
 
 `search_string` is a Ruby regular expression. Surrounding slashes are
 stripped. It can also be the string `*`, which will match all
@@ -88,105 +66,77 @@ resource types. It is required.
 
 #### Search with results
 
-```http
-GET /env/resource_types/*
-```
+    GET /env/resource_types/*
 
-```http
-HTTP 200 OK
-Content-Type: text/pson
-```
+    HTTP 200 OK
+    Content-Type: text/pson
 
-```json
-[
-  {
-    "line": 7,
-    "file": "/etc/puppet/manifests/site.pp",
-    "name":"athing",
-    "kind":"class"
-  },
-  {
-    "doc":"An example class\n",
-    "line":11,
-    "file":"/etc/puppet/manifests/site.pp",
-    "parent":"athing",
-    "name":"bthing",
-    "kind":"class"
-  },
-  {
-    "line":1,
-    "file":"/etc/puppet/manifests/site.pp",
-    "parameters":
-    {
-      "message":null,
-      "a":"{key => \"val\", key2 => \"val2\"}"
-    },
-    "name":"hello",
-    "kind":"defined_type"
-  }
-]
-```
+    [
+      {
+        "line": 7,
+        "file": "/etc/puppet/manifests/site.pp",
+        "name":"athing",
+        "kind":"class"
+      },
+      {
+        "doc":"An example class\n",
+        "line":11,
+        "file":"/etc/puppet/manifests/site.pp",
+        "parent":"athing",
+        "name":"bthing",
+        "kind":"class"
+      },
+      {
+        "line":1,
+        "file":"/etc/puppet/manifests/site.pp",
+        "parameters":
+        {
+          "message":null,
+          "a":"{key => \"val\", key2 => \"val2\"}"
+        },
+        "name":"hello",
+        "kind":"defined_type"
+      }
+    ]
 
 #### Search not found
 
-```http
-GET /env/resource_types/pattern.that.finds.no.resources
-```
+    GET /env/resource_types/pattern.that.finds.no.resources
 
-```http
-HTTP/1.1 404 Not Found: Could not find instances in resource_type with 'pattern.that.finds.no.resources'
-Content-Type: text/plain
-```
+    HTTP/1.1 404 Not Found: Could not find instances in resource_type with 'pattern.that.finds.no.resources'
+    Content-Type: text/plain
 
-```
-Not Found: Could not find instances in resource_type with 'pattern.that.finds.no.resources'
-```
+    Not Found: Could not find instances in resource_type with 'pattern.that.finds.no.resources'
 
 #### No search term given
 
-```http
-GET /env/resource_types/
-```
+    GET /env/resource_types/
 
-```http
-HTTP/1.1 400 No request key specified in /env/resource_types/ 
-Content-Type: text/plain
-```
+    HTTP/1.1 400 No request key specified in /env/resource_types/
+    Content-Type: text/plain
 
-```
-No request key specified in /env/resource_types/
-```
+    No request key specified in /env/resource_types/
 
 #### Search term is an invalid regular expression
 
 Searching on `[-` for instance.
 
-```http
-GET /env/resource_types/%5b-
-```
+    GET /env/resource_types/%5b-
 
-```http
-HTTP/1.1 400 Invalid regex '[-': premature end of char-class: /[-/ 
-Content-Type: text/plain
-```
+    HTTP/1.1 400 Invalid regex '[-': premature end of char-class: /[-/
+    Content-Type: text/plain
 
-```
-Invalid regex '[-': premature end of char-class: /[-/
-```
+    Invalid regex '[-': premature end of char-class: /[-/
 
 ### Examples
 
 List all classes:
 
-```http
-GET /:environment/resource_types/*?kind=class
-```
+    GET /:environment/resource_types/*?kind=class
 
-List matching a regular expression
+List matching a regular expression:
 
-```http
-GET /:environment/resource_types/foo.*bar
-```
+    GET /:environment/resource_types/foo.*bar
 
 Schema
 ------
@@ -224,18 +174,16 @@ Source
 
 Example site.pp used to generate all the responses in this file:
 
-```puppet
-define hello ($message, $a = { key => 'val', key2 => 'val2' }) {
-    notify {$message: }
-}
+    define hello ($message, $a = { key => 'val', key2 => 'val2' }) {
+        notify {$message: }
+    }
 
-hello { "there": }
+    hello { "there": }
 
-class athing {
-}
+    class athing {
+    }
 
-# An example class
-class bthing inherits athing {
-}
-```
+    # An example class
+    class bthing inherits athing {
+    }
 
