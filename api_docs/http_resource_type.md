@@ -14,7 +14,7 @@ None
 
 ### Responses
 
-#### Resource type found
+#### Resource Type Found
 
     GET /env/resource_type/athing
 
@@ -28,7 +28,7 @@ None
       "kind":"class"
     }
 
-#### Resource type not found
+#### Resource Type Not Found
 
     GET /env/resource_type/resource_type_does_not_exist
 
@@ -37,7 +37,7 @@ None
 
     Not Found: Could not find resource_type resource_type_does_not_exist
 
-#### No resource type name given
+#### No Resource Type Name Given
 
     GET /env/resource_type/
 
@@ -64,7 +64,7 @@ resource types. It is required.
 
 ### Responses
 
-#### Search with results
+#### Search With Results
 
     GET /env/resource_types/*
 
@@ -99,7 +99,8 @@ resource types. It is required.
       }
     ]
 
-#### Search not found
+
+#### Search Not Found
 
     GET /env/resource_types/pattern.that.finds.no.resources
 
@@ -108,7 +109,7 @@ resource types. It is required.
 
     Not Found: Could not find instances in resource_type with 'pattern.that.finds.no.resources'
 
-#### No search term given
+#### No Search Term Given
 
     GET /env/resource_types/
 
@@ -117,7 +118,7 @@ resource types. It is required.
 
     No request key specified in /env/resource_types/
 
-#### Search term is an invalid regular expression
+#### Search Term Is an Invalid Regular Expression
 
 Searching on `[-` for instance.
 
