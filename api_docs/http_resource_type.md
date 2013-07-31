@@ -1,12 +1,37 @@
 Resource Type
 =============
 
-See the end of this page for the source manifest used to generate all example responses.
+The `resource_type` and `resource_types` endpoints return information about the
+following kinds of objects available to the puppet master:
+
+* Classes (`class myclass { ... }`)
+* Defined types (`define mytype ($parameter) { ... }`)
+* Node definitions (`node 'web01.example.com' { ... }`)
+
+For an object to be available to the puppet master, it must be present in the
+site manifest (configured by the `manifest` setting) or in a module located in
+the modulepath (configured by the `modulepath` setting; classes and defined
+types only).
+
+Note that this endpoint does **not** return information about native resource
+types written in Ruby.
+
+See the end of this page for the source manifest used to generate all example
+responses.
 
 Find
 ----
 
+Get info about a specific class, defined type, or node, by name. Returns a
+single resource_type response object (see "Schema" below).
+
     GET /:environment/resource_type/:name
+
+> **Note:** Although no two classes or defined types may have the same name,
+> it's possible for a node definition to have the same name as a class or
+> defined type. If this happens, the class or defined type will be returned
+> instead of the node definition. The order in which kinds of objects are
+> searched is classes, then defined types, then node definitions.
 
 ### Parameters
 
@@ -49,17 +74,19 @@ None
 Search
 ------
 
-List all resource types matching a regular expression:
+List all resource types matching a regular expression. Returns an array of
+resource_type response objects (see "Schema" below).
 
     GET /:environment/resource_types/:search_string
 
-`search_string` is a Ruby regular expression. Surrounding slashes are
-stripped. It can also be the string `*`, which will match all
-resource types. It is required.
+The `search_string` is required. It must be either a Ruby regular expression or
+the string `*` (which will match all resource types). Surrounding slashes are
+stripped. Note that if you want to use the `?` character in a regular
+expression, it must be escaped as `%3F`.
 
 ### Parameters
 
-* `kind`: Filter the returned resource types by the `kind` field.
+* `kind`: Optional. Filter the returned resource types by the `kind` field.
   Valid values are `class`, `node`, and `defined_type`.
 
 ### Responses
