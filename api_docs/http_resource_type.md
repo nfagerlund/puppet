@@ -73,29 +73,40 @@ resource types. It is required.
 
     [
       {
-        "line": 7,
         "file": "/etc/puppet/manifests/site.pp",
-        "name":"athing",
-        "kind":"class"
+        "kind": "class",
+        "line": 7,
+        "name": "athing"
       },
       {
-        "doc":"An example class\n",
-        "line":11,
-        "file":"/etc/puppet/manifests/site.pp",
-        "parent":"athing",
-        "name":"bthing",
-        "kind":"class"
+        "doc": "An example class\n",
+        "file": "/etc/puppet/manifests/site.pp",
+        "kind": "class",
+        "line": 11,
+        "name": "bthing",
+        "parent": "athing"
       },
       {
-        "line":1,
-        "file":"/etc/puppet/manifests/site.pp",
-        "parameters":
-        {
-          "message":null,
-          "a":"{key => \"val\", key2 => \"val2\"}"
-        },
-        "name":"hello",
-        "kind":"defined_type"
+        "file": "/etc/puppet/manifests/site.pp",
+        "kind": "defined_type",
+        "line": 1,
+        "name": "hello",
+        "parameters": {
+          "a": "{key2 => \"val2\", key => \"val\"}",
+          "message": "$title"
+        }
+      },
+      {
+        "file": "/etc/puppet/manifests/site.pp",
+        "kind": "node",
+        "line": 14,
+        "name": "web01.example.com"
+      },
+      {
+        "file": "/etc/puppet/manifests/site.pp",
+        "kind": "node",
+        "line": 17,
+        "name": "default"
       }
     ]
 
@@ -175,8 +186,8 @@ Source
 
 Example site.pp used to generate all the responses in this file:
 
-    define hello ($message, $a = { key => 'val', key2 => 'val2' }) {
-        notify {$message: }
+    define hello ($message = $title, $a = { key => 'val', key2 => 'val2' }) {
+      notify {$message: }
     }
 
     hello { "there": }
@@ -187,4 +198,7 @@ Example site.pp used to generate all the responses in this file:
     # An example class
     class bthing inherits athing {
     }
+
+    node 'web01.example.com' {}
+    node default {}
 
