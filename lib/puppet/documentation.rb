@@ -11,7 +11,13 @@ include Puppet::Util::Docs
 # [
 #   { :name        => 'name of type',
 #     :description => 'description of type',
-#     :features    => '???',
+#     :featuredocs => '??? (lib/puppet/util/provider_features.rb, in #featuredocs)',
+#     :features    => { :feature_name => 'feature description', ... }
+#     :providers   => [
+#       { :name        => :provider_name,
+#         :description => 'docs for this provider',
+#         :features    => [:feature_name, :other_feature, ...]
+#       }
 #     :attributes  => [
 #       { :name        => 'name of attribute',
 #         :description => 'docs for this attribute',
@@ -44,8 +50,27 @@ types.each { |name,type|
   docobject[:name] = name
   docobject[:description] = scrub(type.doc)
   docobject[:attributes] = []
+
   if featuredocs = type.featuredocs
-    docobject[:features] = featuredocs
+    docobject[:featuredocs] = featuredocs
+  end
+
+  unless type.features.empty?
+    docobject[:features] = type.features.inject( {} ) { |allfeatures, name|
+      allfeatures[name] = scrub( type.provider_feature(name).docs )
+      allfeatures
+    }
+  end
+
+  if type.providers.length > 0
+    docobject[:providers] ||= []
+    type.providers.each do |provider|
+      docobject[:providers] << {
+        :name        => provider,
+        :description => scrub( type.provider(provider).doc ),
+        :features    => type.provider(provider).features
+      }
+    end
   end
 
   type.validproperties.each { |propertyname|
@@ -58,7 +83,7 @@ types.each { |name,type|
     docobject[:attributes] << {:name => propertyname, :description => scrub(description), :kind => :property}
   }
 
-  type.parameters.each { |paramname, param|
+  type.parameters.each { |paramname|
     namevar = true if type.key_attributes.include?(paramname)
     docobject[:attributes] << {:name => paramname, :description => scrub(type.paramdoc(paramname)), :kind => :parameter, :namevar => (namevar || nil)}
   }
@@ -73,7 +98,9 @@ types.each { |name,type|
 typedocs.each do |this_type|
   print this_type[:name].to_s + "\n-----\n\n"
   print this_type[:description] + "\n\n"
-  print "### Features\n\n" + this_type[:features] + "\n\n" if this_type[:features]
+  print "### Features\n\n" + this_type[:features].inspect + "\n\n" if this_type[:features]
+  print "### Old-style Featuredocs\n\n" + this_type[:featuredocs] + "\n\n" if this_type[:featuredocs]
+  print "### Providers\n\n" + this_type[:providers].inspect + "\n\n" if this_type[:providers]
   print "### Attributes\n\n"
   this_type[:attributes].each do |attribute|
     print "#### " + attribute[:name].to_s + "\n\n"
