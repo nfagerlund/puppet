@@ -107,9 +107,45 @@ types.each { |name,type|
 typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
   print this_type[:name].to_s + "\n-----\n\n"
   print this_type[:description] + "\n\n"
-  print "### Features\n\n" + this_type[:features].inspect + "\n\n" if this_type[:features]
-  print "### Old-style Featuredocs\n\n" + this_type[:featuredocs] + "\n\n" if this_type[:featuredocs]
-  print "### Providers\n\n" + this_type[:providers].inspect + "\n\n" if this_type[:providers]
+
+  if this_type[:features]
+    print "### Features\n\n"
+    featurelist = this_type[:features].keys.sort
+    print featurelist.collect {|feature|
+      '* `' + feature.to_s + '` --- ' + this_type[:features][feature].gsub("\n", ' ')
+    }.join("\n") + "\n\n"
+
+    if this_type[:providers]
+      headers = ["Provider", featurelist.collect{|feature| feature.to_s.gsub('_', ' ')}].flatten
+      data = {}
+      this_type[:providers].each do |provider|
+        data[provider[:name]] = []
+        featurelist.each do |feature|
+          if provider[:features].include?(feature)
+            data[provider[:name]] << "*X*"
+          else
+            data[provider[:name]] << ""
+          end
+        end
+      end
+
+      print doctable(headers, data)
+    end
+  end
+
+  # print "### Old-style Featuredocs\n\n" + this_type[:featuredocs] + "\n\n" if this_type[:featuredocs]
+
+  if this_type[:providers]
+    print "### Providers\n\n"
+    this_type[:providers].sort {|a,b|
+      a[:name] <=> b[:name]
+    }.each do |provider|
+      print "#### " + provider[:name].to_s + "\n\n"
+      print provider[:description] + "\n\n"
+      print "Supported features: " + provider[:features].collect {|prov| '`' + prov.to_s + '`'}.sort.join(', ') + "\n\n"
+    end
+  end
+
   print "### Attributes\n\n"
   this_type[:attributes].sort {|a,b|
     a[:name] <=> b[:name]
