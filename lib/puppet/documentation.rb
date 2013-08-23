@@ -95,14 +95,16 @@ types.each { |name,type|
 
 # puts PP.pp(typedocs)
 
-typedocs.each do |this_type|
+typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
   print this_type[:name].to_s + "\n-----\n\n"
   print this_type[:description] + "\n\n"
   print "### Features\n\n" + this_type[:features].inspect + "\n\n" if this_type[:features]
   print "### Old-style Featuredocs\n\n" + this_type[:featuredocs] + "\n\n" if this_type[:featuredocs]
   print "### Providers\n\n" + this_type[:providers].inspect + "\n\n" if this_type[:providers]
   print "### Attributes\n\n"
-  this_type[:attributes].each do |attribute|
+  this_type[:attributes].sort {|a,b|
+    a[:name] <=> b[:name]
+  }.each do |attribute|
     print "#### " + attribute[:name].to_s + "\n\n"
     print '(' + attribute[:kind].to_s + ")\n\n"
     print "**namevar**\n\n" if attribute[:namevar]
