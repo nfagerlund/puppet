@@ -148,7 +148,13 @@ typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
 
   print "### Attributes\n\n"
   this_type[:attributes].sort {|a,b|
-    a[:name] <=> b[:name]
+    if a[:namevar]
+      -1
+    elsif b[:namevar]
+      1
+    else
+      a[:name] <=> b[:name]
+    end
   }.each do |attribute|
     print "#### " + attribute[:name].to_s + "\n\n"
     print '(' + attribute[:kind].to_s + ")\n\n"
