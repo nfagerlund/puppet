@@ -65,11 +65,20 @@ types.each { |name,type|
   if type.providers.length > 0
     docobject[:providers] ||= []
     type.providers.each do |provider|
-      docobject[:providers] << {
+      provider_object = {
         :name        => provider,
         :description => scrub( type.provider(provider).doc ),
         :features    => type.provider(provider).features
       }
+      # Overrides for missing features due to bug #18426:
+      if type.name == :user and provider_object[:name] == :useradd
+        provider_object[:features] << :manages_passwords << :manages_password_age << :libuser
+      end
+      if type.name == :group and provider_object[:name] == :groupadd
+        provider_object[:features] << :libuser
+      end
+
+      docobject[:providers] << provider_object
     end
   end
 
