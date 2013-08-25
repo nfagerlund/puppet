@@ -164,5 +164,6 @@ typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
     print '(' + attribute[:kind].to_s + ")\n\n"
     print "**namevar**\n\n" if attribute[:namevar]
     print attribute[:description] + "\n\n"
+      print "Available providers are:\n\n" + this_type[:providers].collect {|prov| "* `#{prov[:name].to_s}`"}.sort.join("\n") + "\n\n" if attribute[:name] == :provider
   end
 end
