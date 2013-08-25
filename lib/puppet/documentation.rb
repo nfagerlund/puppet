@@ -24,7 +24,7 @@ include Puppet::Util::Docs
 #       { :name        => 'name of attribute',
 #         :description => 'Markdown fragment: docs for this attribute',
 #         :kind        => (:property || :parameter),
-#         :namevar     => (true || nil),
+#         :namevar     => (true || false || nil),
 #       },
 #       {...etc...}
 #     ],
@@ -91,8 +91,12 @@ types.each { |name,type|
   }
 
   type.parameters.each { |paramname|
-    namevar = true if type.key_attributes.include?(paramname)
-    docobject[:attributes] << {:name => paramname, :description => scrub(type.paramdoc(paramname)), :kind => :parameter, :namevar => (namevar || nil)}
+    docobject[:attributes] << {
+      :name        => paramname,
+      :description => scrub(type.paramdoc(paramname)),
+      :kind        => :parameter,
+      :namevar     => type.key_attributes.include?(paramname)
+    }
   }
 
   typedocs << docobject
