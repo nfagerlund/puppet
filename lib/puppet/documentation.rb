@@ -147,7 +147,6 @@ typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
     }.each do |provider|
       print "#### " + provider[:name].to_s + "\n\n"
       print provider[:description] + "\n\n"
-      print "Supported features: " + provider[:features].collect {|prov| '`' + prov.to_s + '`'}.sort.join(', ') + "\n\n" unless provider[:features].empty?
     end
   end
 
