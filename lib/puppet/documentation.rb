@@ -10,16 +10,19 @@ include Puppet::Util::Docs
 
 # [
 #   { :name        => 'name of type',
-#     :description => 'description of type',
+#     :description => 'Markdown fragment: description of type',
 #     :features    => { :feature_name => 'feature description', ... }
-#     :providers   => [
+#       # If there are no features, the :features key will be ABSENT.
+#     :providers   => [ # If there are no providers, the :providers key will be ABSENT.
 #       { :name        => :provider_name,
-#         :description => 'docs for this provider',
+#         :description => 'Markdown fragment: docs for this provider',
 #         :features    => [:feature_name, :other_feature, ...]
+#           # If there are no supported features for this provider, the value
+#           # of the :features key will be an EMPTY ARRAY.
 #       }
 #     :attributes  => [
 #       { :name        => 'name of attribute',
-#         :description => 'docs for this attribute',
+#         :description => 'Markdown fragment: docs for this attribute',
 #         :kind        => (:property || :parameter),
 #         :namevar     => (true || nil),
 #       },
