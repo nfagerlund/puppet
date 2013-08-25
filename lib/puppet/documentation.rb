@@ -152,6 +152,7 @@ typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
 
   print "### Attributes\n\n"
   this_type[:attributes].sort {|a,b|
+    # TODO: also put ensure at the top, beneath namevar
     if a[:namevar]
       -1
     elsif b[:namevar]
