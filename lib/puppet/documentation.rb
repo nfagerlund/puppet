@@ -11,7 +11,6 @@ include Puppet::Util::Docs
 # [
 #   { :name        => 'name of type',
 #     :description => 'description of type',
-#     :featuredocs => '??? (lib/puppet/util/provider_features.rb, in #featuredocs)',
 #     :features    => { :feature_name => 'feature description', ... }
 #     :providers   => [
 #       { :name        => :provider_name,
@@ -50,10 +49,6 @@ types.each { |name,type|
   docobject[:name] = name
   docobject[:description] = scrub(type.doc)
   docobject[:attributes] = []
-
-  if featuredocs = type.featuredocs
-    docobject[:featuredocs] = featuredocs
-  end
 
   unless type.features.empty?
     docobject[:features] = type.features.inject( {} ) { |allfeatures, name|
