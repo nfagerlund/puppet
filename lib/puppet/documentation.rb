@@ -82,12 +82,14 @@ types.each { |name,type|
 
   type.validproperties.each { |propertyname|
     property = type.propertybyname(propertyname)
-    raise "Could not retrieve property #{sname} on type #{type.name}" unless property
-    unless description = property.doc
-      $stderr.puts "No docs for #{type}[#{sname}]"
-      next
-    end
-    docobject[:attributes] << {:name => propertyname, :description => scrub(description), :kind => :property}
+    raise "Could not retrieve property #{propertyname} on type #{type.name}" unless property
+    docobject[:attributes] << {
+      :name        => propertyname,
+      :description => scrub(property.doc),
+      :kind        => :property
+      # Properties can't be namevars, so leave that key nil.
+    }
+    $stderr.puts "No docs for property #{type.name}[#{propertyname}]" unless docobject[:attributes].last[:description] and !docobject[:attributes].last[:description].empty?
   }
 
   type.parameters.each { |paramname|
@@ -97,6 +99,7 @@ types.each { |name,type|
       :kind        => :parameter,
       :namevar     => type.key_attributes.include?(paramname)
     }
+    $stderr.puts "No docs for parameter #{type.name}[#{paramname}]" unless docobject[:attributes].last[:description] and !docobject[:attributes].last[:description].empty?
   }
 
   typedocs << docobject
