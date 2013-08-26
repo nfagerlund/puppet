@@ -1,3 +1,11 @@
+# Something about this is preventing Puppet from loading non-core types from
+# modules. Which is good for our initial purposes, but won't be great if we try
+# to extend this to the Forge.
+#
+# So if the combo of "require 'puppet'" and "Puppet::Type.loadall" doesn't load
+# from modules, there must be something else in the code trail of `puppet doc
+# --reference type` that does that.
+
 require 'puppet'
 require 'puppet/util/docs'
 
