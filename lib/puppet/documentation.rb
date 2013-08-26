@@ -6,33 +6,7 @@ require 'pp'
 include Puppet::Util::Docs
 # We use one function from this module: scrub().
 
-# The old schema of the typedocs object:
-
-# [
-#   { :name        => 'name of type',
-#     :description => 'Markdown fragment: description of type',
-#     :features    => { :feature_name => 'feature description', ... }
-#       # If there are no features, the :features key will be ABSENT.
-#     :providers   => [ # If there are no providers, the :providers key will be ABSENT.
-#       { :name        => :provider_name,
-#         :description => 'Markdown fragment: docs for this provider',
-#         :features    => [:feature_name, :other_feature, ...]
-#           # If there are no supported features for this provider, the value
-#           # of the :features key will be an EMPTY ARRAY.
-#       }
-#     :attributes  => [
-#       { :name        => 'name of attribute',
-#         :description => 'Markdown fragment: docs for this attribute',
-#         :kind        => (:property || :parameter),
-#         :namevar     => (true || false || nil),
-#       },
-#       {...etc...}
-#     ],
-#   },
-#   { :name ..... etc.}
-# ]
-
-# The current schema of the typedocs object:
+# The schema of the typedocs object:
 
 # { :name_of_type => {
 #     :description => 'Markdown fragment: description of type',
@@ -70,9 +44,10 @@ Puppet::Type.eachtype { |type|
   next if type.name == :whit
 
   # Initialize the documentation object for this type
-  docobject = {}
-  docobject[:description] = scrub(type.doc)
-  docobject[:attributes]  = {}
+  docobject = {
+    :description => scrub(type.doc),
+    :attributes  => {}
+  }
 
   # Handle features:
   # inject will return empty hash if type.features is empty.
