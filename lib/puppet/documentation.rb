@@ -139,64 +139,61 @@ Puppet::Type.eachtype { |type|
 
 
 
-puts PP.pp(typedocs)
+# puts PP.pp(typedocs)
 
-# typedocs.sort {|a,b| a[:name] <=> b[:name] }.each do |this_type|
-#   print this_type[:name].to_s + "\n-----\n\n"
-#   print this_type[:description] + "\n\n"
-#
-#   if this_type[:features]
-#     print "### Features\n\n"
-#     featurelist = this_type[:features].keys.sort
-#     print featurelist.collect {|feature|
-#       '* `' + feature.to_s + '` --- ' + this_type[:features][feature].gsub("\n", ' ')
-#     }.join("\n") + "\n\n"
-#
-#     if this_type[:providers]
-#       headers = ["Provider", featurelist.collect{|feature| feature.to_s.gsub('_', ' ')}].flatten
-#       data = {}
-#       this_type[:providers].each do |provider|
-#         data[provider[:name]] = []
-#         featurelist.each do |feature|
-#           if provider[:features].include?(feature)
-#             data[provider[:name]] << "*X*"
-#           else
-#             data[provider[:name]] << ""
-#           end
-#         end
-#       end
-#
-#       print doctable(headers, data)
-#     end
-#   end
-#
-#   # print "### Old-style Featuredocs\n\n" + this_type[:featuredocs] + "\n\n" if this_type[:featuredocs]
-#
-#   if this_type[:providers]
-#     print "### Providers\n\n"
-#     this_type[:providers].sort {|a,b|
-#       a[:name] <=> b[:name]
-#     }.each do |provider|
-#       print "#### " + provider[:name].to_s + "\n\n"
-#       print provider[:description] + "\n\n"
-#     end
-#   end
-#
-#   print "### Attributes\n\n"
-#   this_type[:attributes].sort {|a,b|
-#     # TODO: also put ensure at the top, beneath namevar
-#     if a[:namevar]
-#       -1
-#     elsif b[:namevar]
-#       1
-#     else
-#       a[:name] <=> b[:name]
-#     end
-#   }.each do |attribute|
-#     print "#### " + attribute[:name].to_s + "\n\n"
-#     print '(' + attribute[:kind].to_s + ")\n\n"
-#     print "**namevar**\n\n" if attribute[:namevar]
-#     print attribute[:description] + "\n\n"
-#       print "Available providers are:\n\n" + this_type[:providers].collect {|prov| "* `#{prov[:name].to_s}`"}.sort.join("\n") + "\n\n" if attribute[:name] == :provider
-#   end
-# end
+typedocs.keys.sort.each do |name|
+  this_type = typedocs[name]
+
+  print name.to_s + "\n-----\n\n"
+  print this_type[:description] + "\n\n"
+
+  if !this_type[:features].empty?
+    print "### Features\n\n"
+    featurelist = this_type[:features].keys.sort
+
+    print featurelist.collect {|feature|
+      '* `' + feature.to_s + '` --- ' + this_type[:features][feature].gsub("\n", ' ')
+    }.join("\n") + "\n\n"
+
+    if !this_type[:providers].empty?
+      headers = [ "Provider", featurelist.collect{|feature| feature.to_s.gsub('_', ' ')} ].flatten
+      data    = this_type[:providers].keys.inject( {} ) {|all_provider_rows, name|
+        all_provider_rows[name] = featurelist.collect {|feature|
+          this_type[:providers][name][:features].include?(feature) ? "*X*" : ''
+        }
+        all_provider_rows
+      }
+
+      print doctable(headers, data)
+    end
+  end
+
+  if !this_type[:providers].empty?
+    print "### Providers\n\n"
+    print this_type[:providers].keys.sort.collect {|name|
+      "#### " + name.to_s + "\n\n" + this_type[:providers][name][:description]
+    }.join("\n\n") + "\n\n"
+  end
+
+  print "### Attributes\n\n"
+  print this_type[:attributes].keys.sort {|a,b|
+    # Float namevar to top and ensure to second-top
+    if this_type[:attributes][a][:namevar]
+      -1
+    elsif this_type[:attributes][b][:namevar]
+      1
+    elsif a == :ensure
+      -1
+    elsif b == :ensure
+      1
+    else
+      a <=> b
+    end
+  }.collect {|name|
+    "#### " + name.to_s + "\n\n" +
+    '(' + this_type[:attributes][name][:kind].to_s + ")\n\n" +
+    (this_type[:attributes][name][:namevar] ? "**(namevar)**\n\n" : '') +
+    this_type[:attributes][name][:description] +
+    (name == :provider ? "\n\n" + "Available providers are:\n\n" + this_type[:providers].keys.collect {|prov| "* `#{prov.to_s}`"}.sort.join("\n") : '')
+  }.join("\n\n") + "\n\n"
+end
