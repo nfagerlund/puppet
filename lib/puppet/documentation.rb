@@ -2,6 +2,7 @@ require 'puppet'
 require 'puppet/util/docs'
 
 require 'pp'
+require 'json'
 
 include Puppet::Util::Docs
 # We use one function from this module: scrub().
@@ -113,6 +114,8 @@ Puppet::Type.eachtype { |type|
 
 
 
+# Yeah, dumping to json is totally easy! Note that under Ruby 1.8.7, JSON is still an external gem; it was added to core in 1.9.2.
+# print JSON.dump(typedocs)
 
 # puts PP.pp(typedocs)
 
