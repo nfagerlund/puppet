@@ -1800,22 +1800,18 @@ class Type
         attr_accessor :parenttype
       end
 
-      # Cram the doc string for every provider into the doc string of the
-      # "provider" parameter. Commenting this out because it's in the way of
-      # producing more flexible forms of type documentation. I expect this to
-      # mildly break the puppet describe application, as well as the puppet doc
-      # application. -NF 2013
+      # Provides the ability to add documentation to a provider.
       #
-      # def self.doc
-      #   # Since we're mixing @doc with text from other sources, we must normalize
-      #   # its indentation with scrub. But we don't need to manually scrub the
-      #   # provider's doc string, since markdown_definitionlist sanitizes its inputs.
-      #   scrub(@doc) + "Available providers are:\n\n" + parenttype.providers.sort { |a,b|
-      #     a.to_s <=> b.to_s
-      #   }.collect { |i|
-      #     markdown_definitionlist( i, scrub(parenttype().provider(i).doc) )
-      #   }.join
-      # end
+      def self.doc
+        # Since we're mixing @doc with text from other sources, we must normalize
+        # its indentation with scrub. But we don't need to manually scrub the
+        # provider's doc string, since markdown_definitionlist sanitizes its inputs.
+        scrub(@doc) + "Available providers are:\n\n" + parenttype.providers.sort { |a,b|
+          a.to_s <=> b.to_s
+        }.collect { |i|
+          markdown_definitionlist( i, scrub(parenttype().provider(i).doc) )
+        }.join
+      end
 
       # @todo this does what? where and how?
       # @return [String] the name of the provider
