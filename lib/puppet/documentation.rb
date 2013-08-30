@@ -107,6 +107,10 @@ Puppet::Type.eachtype { |type|
       description = type.paramdoc(name)
       $stderr.puts "No docs for parameter #{name} of #{type.name}" unless description and !description.empty?
 
+      # Strip off the too-huge provider list. The question of what to do about
+      # providers is a decision for the formatter, not the fragment collector.
+      description = description.split('Available providers are')[0] if name == :provider
+
       allparameters[name] = {
         :description => scrub(description),
         :kind        => :parameter,
