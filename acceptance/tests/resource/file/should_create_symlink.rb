@@ -1,5 +1,4 @@
 test_name "should create symlink"
-confine :except, :platform => 'windows'
 
 message = 'hello world'
 target  = "/tmp/test-#{Time.new.to_i}"

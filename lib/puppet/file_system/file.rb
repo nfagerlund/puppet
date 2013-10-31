@@ -104,7 +104,20 @@ class Puppet::FileSystem::File
   #
   # @return [Boolean] true if the named file exists.
   def self.exist?(path)
-    File.exist?(path)
+    if Puppet.features.microsoft_windows?
+      path = path.to_str if path.respond_to?(:to_str) # support WatchedFile
+      path = path.to_s # support String and Pathname
+      begin
+        if Puppet::Util::Windows::File.symlink?(path)
+          path = Puppet::Util::Windows::File.readlink(path)
+        end
+        ! Puppet::Util::Windows::File.stat(path).nil?
+      rescue # generally INVALID_HANDLE_VALUE which means 'file not found'
+        false
+      end
+    else
+      File.exist?(path)
+    end
   end
 
   # Determine if a file exists by verifying that the file can be stat'd.
@@ -146,29 +159,49 @@ class Puppet::FileSystem::File
   #
   # @return [Integer] 0
   def symlink(dest, options = {})
-    FileUtils.symlink(@path, dest, options)
+    if Puppet.features.microsoft_windows?
+      Puppet::Util::Windows::File.symlink(@path, dest)
+    else
+      FileUtils.symlink(@path, dest, options)
+    end
   end
 
   # @return [Boolean] true if the file is a symbolic link.
   def symlink?
-    File.symlink?(@path)
+    if Puppet.features.microsoft_windows?
+      Puppet::Util::Windows::File.symlink?(@path)
+    else
+      File.symlink?(@path)
+    end
   end
 
   # @return [String] the name of the file referenced by the given link.
   def readlink
-    File.readlink(@path)
+    if Puppet.features.microsoft_windows?
+      Puppet::Util::Windows::File.readlink(@path)
+    else
+      File.readlink(@path)
+    end
   end
 
 
   # @return [File::Stat] object for the named file.
   def stat
-    File.stat(@path)
+    if Puppet.features.microsoft_windows?
+      Puppet::Util::Windows::File.stat(@path)
+    else
+      File.stat(@path)
+    end
   end
 
   # @return [File::Stat] Same as stat, but does not follow the last symbolic
   # link. Instead, reports on the link itself.
   def lstat
-    File.lstat(@path)
+    if Puppet.features.microsoft_windows?
+      Puppet::Util::Windows::File.lstat(@path)
+    else
+      File.lstat(@path)
+    end
   end
 
   # Compare the contents of this file against the contents of a stream.

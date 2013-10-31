@@ -95,4 +95,160 @@ describe Puppet::FileSystem::File do
       children.each { |pid| Process.wait(pid) }
     end
   end
+
+  describe "symlink", :if => Puppet::Type.type(:file).defaultprovider.feature?(:manages_symlinks)
+
+    let (:file) { Puppet::FileSystem::File.new(tmpfile("somefile")) }
+    let (:missing_file) { Puppet::FileSystem::File.new(tmpfile("missingfile")) }
+    let (:dir) { Puppet::FileSystem::File.new(tmpdir("somedir")) }
+
+    before :each do
+      FileUtils.touch(file.path)
+    end
+
+    it "should return true for exist? on a present file" do
+      file.exist?.should be_true
+      Puppet::FileSystem::File.exist?(file.path).should be_true
+    end
+
+    it "should return false for exist? on a non-existant file" do
+      missing_file.exist?.should be_false
+      Puppet::FileSystem::File.exist?(missing_file.path).should be_false
+    end
+
+    it "should return true for exist? on a present directory" do
+      dir.exist?.should be_true
+      Puppet::FileSystem::File.exist?(dir.path).should be_true
+    end
+
+    it "should return false for exist? on a dangling symlink" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      missing_file.symlink(symlink.path)
+
+      missing_file.exist?.should be_false
+      symlink.exist?.should be_false
+    end
+
+    it "should return true for exist? on valid symlinks" do
+      [file, dir].each do |target|
+        symlink = Puppet::FileSystem::File.new(tmpfile("#{target.path.basename.to_s}_link"))
+        target.symlink(symlink.path)
+
+        target.exist?.should be_true
+        symlink.exist?.should be_true
+      end
+    end
+
+    it "should accept a string, Pathname or object with to_str (Puppet::Util::WatchedFile) for exist?" do
+      [ tmpfile('bogus1'),
+        Pathname.new(tmpfile('bogus2')),
+        Puppet::Util::WatchedFile.new(tmpfile('bogus3'))
+        ].each { |f| Puppet::FileSystem::File.exist?(f).should be_false  }
+    end
+
+    it "should return a File::Stat instance when calling stat on an existing file" do
+      file.stat.should be_instance_of(File::Stat)
+    end
+
+    it "should raise Errno::ENOENT when calling stat on a missing file" do
+      expect { missing_file.stat }.to raise_error(Errno::ENOENT)
+    end
+
+    it "should be able to create a symlink, and verify it with symlink?" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      file.symlink(symlink.path)
+
+      symlink.symlink?.should be_true
+    end
+
+    it "should report symlink? as false on file, directory and missing files" do
+      [file, dir, missing_file].each do |f|
+        f.symlink?.should be_false
+      end
+    end
+
+    it "should return a File::Stat with ftype 'link' when calling lstat on a symlink pointing to existing file" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      file.symlink(symlink.path)
+
+      stat = symlink.lstat
+      stat.should be_instance_of(File::Stat)
+      stat.ftype.should == 'link'
+    end
+
+    it "should return a File::Stat of ftype 'link' when calling lstat on a symlink pointing to missing file" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      missing_file.symlink(symlink.path)
+
+      stat = symlink.lstat
+      stat.should be_instance_of(File::Stat)
+      stat.ftype.should == 'link'
+    end
+
+    it "should return a File::Stat of ftype 'file' when calling stat on a symlink pointing to existing file" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      file.symlink(symlink.path)
+
+      stat = symlink.stat
+      stat.should be_instance_of(File::Stat)
+      stat.ftype.should == 'file'
+    end
+
+    it "should return a File::Stat of ftype 'directory' when calling stat on a symlink pointing to existing directory" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      dir.symlink(symlink.path)
+
+      stat = symlink.stat
+      stat.should be_instance_of(File::Stat)
+      stat.ftype.should == 'directory'
+    end
+
+    it "should return a File::Stat of ftype 'file' when calling stat on a symlink pointing to another symlink" do
+      # point symlink -> file
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      file.symlink(symlink.path)
+
+      # point symlink2 -> symlink
+      symlink2 = Puppet::FileSystem::File.new(tmpfile("somefile_link2"))
+      symlink.symlink(symlink2.path)
+
+      symlink2.stat.ftype.should == 'file'
+    end
+
+
+    it "should raise Errno::ENOENT when calling stat on a dangling symlink" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      missing_file.symlink(symlink.path)
+
+      expect { symlink.stat }.to raise_error(Errno::ENOENT)
+    end
+
+    it "should be able to readlink to resolve the physical path to a symlink" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      file.symlink(symlink.path)
+
+      file.exist?.should be_true
+      symlink.readlink.should == file.path.to_s
+    end
+
+    it "should not resolve entire symlink chain with readlink on a symlink'd symlink" do
+      # point symlink -> file
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      file.symlink(symlink.path)
+
+      # point symlink2 -> symlink
+      symlink2 = Puppet::FileSystem::File.new(tmpfile("somefile_link2"))
+      symlink.symlink(symlink2.path)
+
+      file.exist?.should be_true
+      symlink2.readlink.should == symlink.path.to_s
+    end
+
+    it "should be able to readlink to resolve the physical path to a dangling symlink" do
+      symlink = Puppet::FileSystem::File.new(tmpfile("somefile_link"))
+      missing_file.symlink(symlink.path)
+
+      missing_file.exist?.should be_false
+      symlink.readlink.should == missing_file.path.to_s
+    end
 end

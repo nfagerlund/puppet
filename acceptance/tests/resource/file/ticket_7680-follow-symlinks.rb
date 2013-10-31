@@ -1,5 +1,4 @@
 test_name "#7680: 'links => follow' should use the file source content"
-confine :except, :platform => 'windows'
 
 agents.each do |agent|
 
