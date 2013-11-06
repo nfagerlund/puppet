@@ -96,7 +96,7 @@ describe Puppet::FileSystem::File do
     end
   end
 
-  describe "symlink", :if => Puppet::Type.type(:file).defaultprovider.feature?(:manages_symlinks)
+  describe "symlink", :if => Puppet.features.manages_symlinks?
 
     let (:file) { Puppet::FileSystem::File.new(tmpfile("somefile")) }
     let (:missing_file) { Puppet::FileSystem::File.new(tmpfile("missingfile")) }
