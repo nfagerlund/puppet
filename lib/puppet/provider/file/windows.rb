@@ -36,33 +36,43 @@ Puppet::Type.type(:file).provide :windows do
   alias :name2uid :name2id
 
   def owner
-    return :absent unless resource.exist?
+    return :absent unless stat = resource.stat
     get_owner(resource[:path])
   end
 
   def owner=(should)
     begin
-      set_owner(should, resource[:path])
+      if resource[:links] == :manage
+        path = file.path.to_s
+      else
+        path = file.readlink
+      end
+      set_owner(should, path)
     rescue => detail
       raise Puppet::Error, "Failed to set owner to '#{should}': #{detail}"
     end
   end
 
   def group
-    return :absent unless resource.exist?
+    return :absent unless stat = resource.stat
     get_group(resource[:path])
   end
 
   def group=(should)
     begin
-      set_group(should, resource[:path])
+      if resource[:links] == :manage
+        path = file.path.to_s
+      else
+        path = file.readlink
+      end
+      set_group(should, path)
     rescue => detail
       raise Puppet::Error, "Failed to set group to '#{should}': #{detail}"
     end
   end
 
   def mode
-    if resource.exist?
+    if stat = resource.stat
       mode = get_mode(resource[:path])
       mode ? mode.to_s(8) : :absent
     else
@@ -72,7 +82,12 @@ Puppet::Type.type(:file).provide :windows do
 
   def mode=(value)
     begin
-      set_mode(value.to_i(8), resource[:path])
+      if resource[:links] == :manage
+        path = file.path.to_s
+      else
+        path = file.readlink
+      end
+      set_mode(value.to_i(8), path)
     rescue => detail
       error = Puppet::Error.new("failed to set mode #{mode} on #{resource[:path]}: #{detail.message}")
       error.set_backtrace detail.backtrace
@@ -85,5 +100,11 @@ Puppet::Type.type(:file).provide :windows do
     if [:owner, :group, :mode].any?{|p| resource[p]} and !supports_acl?(resource[:path])
       resource.fail("Can only manage owner, group, and mode on filesystems that support Windows ACLs, such as NTFS")
     end
+  end
+
+  attr_reader :file
+  private
+  def file
+    @file ||= Puppet::FileSystem::File.new(resource[:path])
   end
 end
